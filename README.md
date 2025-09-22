@@ -19,14 +19,8 @@ This project demonstrates a <strong>full 3-tier application deployment</strong> 
 The deployment integrates <strong>monitoring tools</strong> (Prometheus & Grafana), <strong>Slack notifications</strong> for pipeline events, and an <strong>Ingress controller with a custom domain</strong> for the application.
 </p>
 
-<h2>🧭 Architecture Overview</h2>
-<pre>
-Frontend React App --> Backend Node.js API --> MySQL Database
-                      |
-                      --> Metrics --> Prometheus --> Grafana Dashboard
-Jenkins --> CI/CD --> Frontend & Backend
-Jenkins --> Slack Notifications
-</pre>
+<p><strong>Architecture</strong><br>
+<img src="https://raw.githubusercontent.com/p-udaykiran/3-tier-applicationdeployment-react-nodejs-mysql/refs/heads/main/client/public/Screenshot%202025-09-23%20014735.png" alt="Grafana Screenshot" width="600"></p>
 
 <h2>📂 Project Structure</h2>
 <pre>
