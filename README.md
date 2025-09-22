@@ -1,4 +1,4 @@
-<h1>🚀 3-Tier Web Application Deployment on EKS with CI/CD & <h1 align="center">Monitoring</h1>
+<h1>🚀 3-Tier Web Application Deployment on EKS with CI/CD & Monitoring</h1>
 
 <!-- Stack Icons -->
 <div align="center">
