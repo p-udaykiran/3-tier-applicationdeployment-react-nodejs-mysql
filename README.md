@@ -132,6 +132,6 @@ cd 3-tier-applicationdeployment-react-nodejs-mysql-
 </p>
 <p>
     <img src="https://www.svgrepo.com/show/448234/linkedin.svg" alt="LinkedIn" width="20" height="20" style="vertical-align:middle;"> 
-    <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/p-udaykiran/">p-udaykiran</a>
+    <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/udaykiran-pagidimari-30275725a/">UDAYKIRAN</a>
 </p>
 
