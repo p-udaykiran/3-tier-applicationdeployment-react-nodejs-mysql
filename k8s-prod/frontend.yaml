@@ -1,36 +1,46 @@
 ---
+# -------------------------------
+# 1️⃣ Deployment: Frontend Application
+# -------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
-  namespace: prod
+  name: frontend                 # Name of the frontend Deployment
+  namespace: webapps             # Deployed into 'webapps' namespace
   labels:
-    app: frontend
+    app: frontend                # Common label for identification
 spec:
-  replicas: 3
+  replicas: 3                    # Run 3 frontend pods for load balancing & HA
   selector:
     matchLabels:
-      app: frontend
+      app: frontend              # Ensures Deployment manages only pods with this label
   template:
     metadata:
       labels:
-        app: frontend
+        app: frontend            # Pod labels (must match selector above)
     spec:
       containers:
         - name: frontend
-          image: udaypagidimari/frontend:latest
+          image: udaypagidimari/frontend:latest  # Frontend container image
           ports:
-            - containerPort: 80
+            - containerPort: 80   # Frontend app listens on port 80 (default HTTP)
+          # 🔹 If frontend needs backend API, add env vars or config here later
+
 ---
+# -------------------------------
+# 2️⃣ Service: Frontend Service
+# -------------------------------
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-svc
-  namespace: prod
+  name: frontend-svc             # Service name (DNS: frontend-svc.webapps.svc.cluster.local)
+  namespace: webapps
+  labels:
+    app: frontend
 spec:
   selector:
-    app: frontend
+    app: frontend                # Routes traffic only to pods with label "app=frontend"
   ports:
-    - port: 80
-      targetPort: 80
-  type: ClusterIP
+    - port: 80                   # Service port (inside cluster)
+      targetPort: 80             # Forwards traffic to container's port 80
+  type: ClusterIP                # Internal service (use Ingress/LoadBalancer to expose outside)

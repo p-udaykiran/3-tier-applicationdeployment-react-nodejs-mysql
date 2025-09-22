@@ -1,32 +1,45 @@
+---
+# -------------------------------
+# Ingress: Expose Frontend & Backend via Domain
+# -------------------------------
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: user-management-ingress
-  namespace: prod
+  name: user-management-ingress       # Name of Ingress
+  namespace: webapps                     # Namespace where frontend & backend live
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-webapps   # Cert-manager ClusterIssuer for SSL
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"   # Redirect all HTTP -> HTTPS
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx             # Ingress controller (nginx in this case)
   rules:
+    # -------------------------------
+    # Rule 1: Main domain (vlearning.live)
+    # -------------------------------
     - host: vlearning.live
       http:
         paths:
+          # Backend API → /api
           - path: /api
             pathType: Prefix
             backend:
               service:
-                name: backend-svc
+                name: backend-svc      # Backend Service (ClusterIP)
                 port:
-                  number: 5000
+                  number: 5000         # Backend port
+          # Frontend → /
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: frontend-svc
+                name: frontend-svc     # Frontend Service (ClusterIP)
                 port:
-                  number: 80
+                  number: 80           # Frontend port
+
+    # -------------------------------
+    # Rule 2: Subdomain (www.vlearning.live)
+    # -------------------------------
     - host: www.vlearning.live
       http:
         paths:
@@ -44,8 +57,12 @@ spec:
                 name: frontend-svc
                 port:
                   number: 80
+
+  # -------------------------------
+  # TLS: Enable HTTPS with Let's Encrypt
+  # -------------------------------
   tls:
     - hosts:
         - vlearning.live
         - www.vlearning.live
-      secretName: vlearning-live-tls
+      secretName: vlearning-live-tls  # Cert-manager stores SSL certs here

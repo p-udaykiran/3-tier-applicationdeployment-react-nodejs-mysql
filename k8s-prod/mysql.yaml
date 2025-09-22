@@ -1,40 +1,51 @@
 ---
+# -------------------------------
+# 1️⃣ Secret: Store MySQL root password securely
+# -------------------------------
 apiVersion: v1
 kind: Secret
 metadata:
   name: mysql-secret
-  namespace: prod
+  namespace: webapps           # Namespace where Secret resides
   labels:
     app: mysql
-type: Opaque
+type: Opaque                  # Generic secret type
 stringData:
-  MYSQL_ROOT_PASSWORD: Aditya
+  MYSQL_ROOT_PASSWORD: uday123 # Root password for MySQL container
 
 ---
+# -------------------------------
+# 2️⃣ ConfigMap: Store MySQL database name
+# -------------------------------
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysql-config
-  namespace: prod
+  namespace: webapps
   labels:
     app: mysql
 data:
-  MYSQL_DATABASE: crud_app
+  MYSQL_DATABASE: crud_app    # Database name to be created inside MySQL
 
 ---
+# -------------------------------
+# 3️⃣ ConfigMap: MySQL initialization SQL script
+# -------------------------------
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mysql-initdb-config
-  namespace: prod
+  namespace: webapps
   labels:
     app: mysql
 data:
   init.sql: |
+    -- Create database if it doesn't exist
     CREATE DATABASE IF NOT EXISTS crud_app;
 
     USE crud_app;
 
+    -- Create users table with required columns
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
@@ -46,32 +57,38 @@ data:
     );
 
 ---
+# -------------------------------
+# 4️⃣ Service: Headless service for StatefulSet
+# -------------------------------
 apiVersion: v1
 kind: Service
 metadata:
   name: mysql
-  namespace: prod
+  namespace: webapps
   labels:
     app: mysql
 spec:
-  clusterIP: None
+  clusterIP: None             # Headless service; no load balancer
   selector:
-    app: mysql
+    app: mysql                # Selects pods labeled 'app=mysql'
   ports:
     - port: 3306
-      targetPort: 3306
+      targetPort: 3306        # Expose MySQL default port
 
 ---
+# -------------------------------
+# 5️⃣ StatefulSet: Deploy MySQL pods with persistent storage
+# -------------------------------
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
-  namespace: prod
+  namespace: webapps
   labels:
     app: mysql
 spec:
-  serviceName: mysql
-  replicas: 1
+  serviceName: mysql         # Must match the headless service name
+  replicas: 1               # Number of MySQL pods
   selector:
     matchLabels:
       app: mysql
@@ -82,7 +99,7 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: mysql:8
+          image: mysql:8    # MySQL 8 container image
           ports:
             - containerPort: 3306
           env:
@@ -98,19 +115,19 @@ spec:
                   key: MYSQL_DATABASE
           volumeMounts:
             - name: mysql-persistent-storage
-              mountPath: /var/lib/mysql
+              mountPath: /var/lib/mysql         # Persist MySQL data
             - name: initdb
-              mountPath: /docker-entrypoint-initdb.d
+              mountPath: /docker-entrypoint-initdb.d # Mount SQL init scripts
       volumes:
         - name: initdb
           configMap:
-            name: mysql-initdb-config
+            name: mysql-initdb-config          # Mount initialization SQL script
   volumeClaimTemplates:
     - metadata:
         name: mysql-persistent-storage
       spec:
-        accessModes: [ "ReadWriteOnce" ]
-        storageClassName: ebs-sc
+        accessModes: [ "ReadWriteOnce" ]      # Single pod can read/write
+        storageClassName: ebs-sc              # Storage class for dynamic provisioning
         resources:
           requests:
-            storage: 5Gi
+            storage: 5Gi                      # Request 5GB per pod

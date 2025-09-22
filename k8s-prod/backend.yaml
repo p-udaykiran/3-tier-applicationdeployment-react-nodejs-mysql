@@ -1,51 +1,61 @@
 ---
+# -------------------------------
+# 1️⃣ Deployment: Backend Application
+# -------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
-  namespace: prod
+  name: backend                 # Name of the Deployment
+  namespace: webapps               # Deployed into 'webapps' namespace
   labels:
-    app: backend
+    app: backend                # Common label for identification
 spec:
-  replicas: 3
+  replicas: 3                   # Run 3 backend pods for high availability
   selector:
     matchLabels:
-      app: backend
+      app: backend              # Ensures Deployment manages only these pods
   template:
     metadata:
       labels:
-        app: backend
+        app: backend            # Pod labels must match the selector
     spec:
       containers:
         - name: backend
-          image: udaypagidimari/backend:latest
+          image: udaypagidimari/backend:latest  # Backend app container image
           ports:
-            - containerPort: 5000
+            - containerPort: 5000  # Application listens on port 5000
           env:
+            # 🔹 Database connection details
             - name: DB_HOST
-              value: mysql
+              value: mysql       # MySQL service name (DNS resolution within cluster)
             - name: DB_USER
-              value: root
+              value: root        # DB username (root for now; better to use non-root user in webapps)
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: MYSQL_ROOT_PASSWORD
+                  name: mysql-secret       # Refers to Secret we created earlier
+                  key: MYSQL_ROOT_PASSWORD # Picks root password securely
             - name: DB_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: mysql-config
+                  name: mysql-config       # Refers to ConfigMap with DB name
                   key: MYSQL_DATABASE
+
 ---
+# -------------------------------
+# 2️⃣ Service: Backend Service
+# -------------------------------
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-svc
-  namespace: prod
+  name: backend-svc             # Service name (DNS: backend-svc.webapps.svc.cluster.local)
+  namespace: webapps
+  labels:
+    app: backend
 spec:
   selector:
-    app: backend
+    app: backend                # Routes traffic only to pods with this label
   ports:
-    - port: 5000
-      targetPort: 5000
-  type: ClusterIP
+    - port: 5000                # Service port (used inside the cluster)
+      targetPort: 5000          # Forwards traffic to containerPort 5000
+  type: ClusterIP               # Internal service (not exposed to the internet)
